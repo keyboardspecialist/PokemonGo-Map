@@ -9,6 +9,7 @@ from datetime import datetime
 from . import config
 from .models import Pokemon, Gym, Pokestop
 
+from pogom.pgoapi.utilities import get_pos_by_name
 
 class Pogom(Flask):
     def __init__(self, import_name, **kwargs):
@@ -17,6 +18,7 @@ class Pogom(Flask):
         self.route("/", methods=['GET'])(self.fullmap)
         self.route("/raw_data", methods=['GET'])(self.raw_data)
         self.route("/next_loc", methods=['POST'])(self.next_loc)
+        self.route("/launch_new_location", methods=['GET'])(self.launch_new_location)
 
     def fullmap(self):
         return render_template('map.html',
@@ -35,8 +37,26 @@ class Pogom(Flask):
         if request.args.get('gyms', 'true') == 'true':
             d['gyms'] = Gym.get_all()
 
+        d['locstr'] = config['LOCATION_STRING']
+        d['steps'] = config['SEARCH_STEPS']
+
         return jsonify(d)
 
+    def launch_new_location(self):
+        d = {}
+        loc = request.args.get('loc', type=str)
+        stp = request.args.get("stp", type=int)
+
+        position = get_pos_by_name(loc)
+
+        d['latitude'] = position[0]
+        d['longitude'] = position[1]
+
+        config['ORIGINAL_LATITUDE'] = position[0]
+        config['ORIGINAL_LONGITUDE'] = position[1]
+        config['SEARCH_STEPS'] = stp
+
+        return jsonify(d)
     def next_loc(self):
         lat = request.args.get('lat', type=float)
         lon = request.args.get('lon', type=float)

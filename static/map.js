@@ -298,6 +298,8 @@ function updateMap() {
 
         });
 
+        $('#location-textbox').val(result.locstr);
+        $('#stepsize-textbox').val(result.steps);
         clearStaleMarkers();
     });
 };
@@ -340,6 +342,37 @@ $('#pokestops-switch').change(function() {
         map_pokestops = {}
     }
 });
+
+
+$('#refreshmap-button').click(function() {
+    updateMap();
+    console.log("refreshmap button clicked!");
+});
+
+$('#launch-location').click(function() {
+    $.ajax({
+        url: "launch_new_location",
+        type: 'GET',
+        data: {
+            'loc': $('#location-textbox').val(),
+            'stp': $('#stepsize-textbox').val()
+        },
+        dataType: "json"
+    }).done(function(result) {
+        map_gyms = {}
+        map_pokemons = {}
+        map_pokestops = {}
+
+        clearStaleMarkers();
+
+        center_lat = result.latitude;
+        center_lng = result.longitude;
+
+        initMap();
+
+    });
+});
+
 
 var updateLabelDiffTime = function() {
     $('.label-countdown').each(function(index, element) {

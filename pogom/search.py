@@ -74,6 +74,10 @@ def search(args):
         log.info('Scanning step {:d} of {:d}.'.format(i, num_steps**2))
         log.debug('Scan location is {:f}, {:f}'.format(step_location[0], step_location[1]))
 
+        if position[0] != config['ORIGINAL_LATITUDE'] or position[1] != config['ORIGINAL_LONGITUDE']:
+            log.info('Position changed... aborting current search')
+            break
+            
         response_dict = send_map_request(api, step_location)
         while not response_dict:
             log.info('Map Download failed. Trying again.')
